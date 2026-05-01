@@ -1,0 +1,10 @@
+[
+  { "hook_id": "h01", "transition_id": "capture",    "timing": "before", "priority": 1, "action": "check_rate_limit", "payload": { "max_per_minute": 2 }, "on_error": "abort", "on_signal": { "Freeze": { "transition": "rate_limit" } } },
+  { "hook_id": "h02", "transition_id": "capture",    "timing": "before", "priority": 2, "action": "log_incoming",    "payload": { "level": "info" }, "on_error": "continue" },
+  { "hook_id": "h03", "transition_id": "capture",    "timing": "after",  "priority": 1, "action": "parse_recipients","payload": {}, "on_error": "abort" },
+  { "hook_id": "h04", "transition_id": "capture",    "timing": "after",  "priority": 2, "action": "detect_loopback", "payload": { "threshold": 3 }, "on_error": "continue", "on_signal": { "Abort": { "transition": "loop_detected", "alert_anarea": true } } },
+  { "hook_id": "h05", "transition_id": "distribute", "timing": "before", "priority": 1, "action": "stagger_dispatch","payload": { "delay_ms": 2000 }, "on_error": "retry" },
+  { "hook_id": "h06", "transition_id": "distribute", "timing": "after",  "priority": 1, "action": "log_delivered",   "payload": {}, "on_error": "continue" },
+  { "hook_id": "h07", "transition_id": "relay",      "timing": "before", "priority": 1, "action": "relay_to_anarea", "payload": {}, "on_error": "retry" },
+  { "hook_id": "h08", "transition_id": "relay_done", "timing": "after",  "priority": 1, "action": "log_delivered",   "payload": { "direction": "relay" }, "on_error": "continue" }
+]

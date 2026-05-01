@@ -1,0 +1,8 @@
+[
+  { "id": "idéation", "description": "Projet en gestation — pas encore déposé", "type": "stable" },
+  { "id": "germé",    "description": "Déposé dans 07-PROJETS, en attente de prise en charge", "type": "stable" },
+  { "id": "ouvert",   "description": "Pris en charge par une présence, travail non commencé", "type": "stable" },
+  { "id": "en-cours", "description": "Travail actif par la présence assignée", "type": "stable" },
+  { "id": "terminé",  "description": "Projet terminé — en attente de validation", "type": "stable" },
+  { "id": "archivé",  "description": "Projet validé et archivé", "type": "terminal" }
+]

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "semer",
+    "from": "idéation", "to": "germé",
+    "description": "Projet déposé dans 07-PROJETS/ par Anaréa ou une présence",
+    "trigger": "external",
+    "permissions": ["any"]
+  },
+  {
+    "id": "ouvrir",
+    "from": "germé", "to": "ouvert",
+    "description": "Une présence prend le projet en charge (claim)",
+    "trigger": "external",
+    "permissions": ["any"]
+  },
+  {
+    "id": "démarrer",
+    "from": "ouvert", "to": "en-cours",
+    "description": "La présence commence le travail",
+    "trigger": "automatic",
+    "permissions": ["system"]
+  },
+  {
+    "id": "terminer",
+    "from": "en-cours", "to": "terminé",
+    "description": "Travail terminé, en attente de validation",
+    "trigger": "external",
+    "permissions": ["any"]
+  },
+  {
+    "id": "archiver",
+    "from": "terminé", "to": "archivé",
+    "description": "Projet validé et archivé par Anaréa",
+    "trigger": "external",
+    "permissions": ["anarea"]
+  },
+  {
+    "id": "abandonner",
+    "from": "germé", "to": "archivé",
+    "description": "Abandonné avant prise en charge",
+    "trigger": "manual",
+    "permissions": ["anarea"]
+  },
+  {
+    "id": "abandonner_ouvert",
+    "from": "ouvert", "to": "archivé",
+    "description": "Abandonné après prise en charge",
+    "trigger": "manual",
+    "permissions": ["anarea"]
+  },
+  {
+    "id": "geler",
+    "from": "en-cours", "to": "ouvert",
+    "description": "Retour en attente (blocage, dépendance externe)",
+    "trigger": "hook_decision",
+    "permissions": ["system"],
+    "condition": "auto"
+  }
+]

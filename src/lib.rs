@@ -6,5 +6,6 @@ pub mod actions;
 pub mod objects;
 
 pub use engine::WorkflowEngine;
-pub use registry::{Registry, ActionRegistry, NativeAction, ScriptWrapper};
+pub use registry::{Registry, ActionHandler, HookSignal, ActionContext, ScriptWrapper};
 pub use config::WorkflowConfig;
+pub use store::Store;

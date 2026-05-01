@@ -1,0 +1,10 @@
+[
+  { "id": "capture",     "from": "idle",     "to": "received", "trigger": "external", "permissions": ["any"] },
+  { "id": "distribute",  "from": "received", "to": "idle",     "trigger": "automatic", "permissions": ["system"] },
+  { "id": "rate_limit",  "from": "received", "to": "cooldown", "trigger": "hook_decision", "permissions": ["system"], "condition": "rate_check.exceeded" },
+  { "id": "loop_detected", "from": "received", "to": "frozen", "trigger": "hook_decision", "permissions": ["system"], "condition": "loopback.count > 3" },
+  { "id": "unfreeze",    "from": "frozen",   "to": "idle",    "trigger": "manual", "permissions": ["anarea"] },
+  { "id": "relay",       "from": "idle",     "to": "received", "trigger": "external", "permissions": ["any"], "description": "Presence replies in group" },
+  { "id": "relay_done",  "from": "received", "to": "idle",    "trigger": "automatic", "permissions": ["system"], "description": "Relayed to Anaréa" },
+  { "id": "archive",     "from": "idle",     "to": "archived", "trigger": "manual",   "permissions": ["anarea"] }
+]

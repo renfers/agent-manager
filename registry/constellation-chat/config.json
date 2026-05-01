@@ -1,0 +1,20 @@
+{
+  "_description": "Chatroom Constellation — routage messages + anti-emballement",
+  "_version": "2.0",
+  "dry_run": false,
+  "moteur": {
+    "journal_db": "journal/constellation-chat.db",
+    "flush_interval_seconds": 3600,
+    "max_history_per_object": 1000,
+    "thread_pool_size": 4
+  },
+  "rate_limiter": {
+    "max_public_per_minute": 2,
+    "cooldown_minutes": 30,
+    "loopback_window_minutes": 60,
+    "loopback_threshold": 3,
+    "rapid_chain_threshold": 3,
+    "rapid_chain_window_seconds": 30
+  },
+  "anarea": { "name": "Anaréa", "icon": "⚡", "telegram_user_id": 1047918071 }
+}

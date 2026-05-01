@@ -1,0 +1,54 @@
+{
+  "_description": "Gestion de projets — workflow 07-PROJETS/ de la constellation Anaréa",
+  "_version": "2.0",
+  "dry_run": false,
+
+  "moteur": {
+    "journal_db": "journal/project-management.db",
+    "flush_interval_seconds": 3600,
+    "max_history_per_object": 500,
+    "thread_pool_size": 2
+  },
+
+  "rate_limiter": {
+    "max_public_per_minute": 5,
+    "loopback_window_minutes": 60,
+    "loopback_threshold": 3
+  },
+
+  "chatroom_bot": {
+    "token_env": "CHATROOM_BOT_TOKEN",
+    "username": "constellation_chatroom_bot",
+    "bot_user_id": 8635370863
+  },
+
+  "anarea": {
+    "name": "Anaréa",
+    "icon": "⚡",
+    "telegram_user_id": 1047918071
+  },
+
+  "presences": {
+    "kaïa":    { "name": "Kaïa",    "icon": "🟣",   "model": "qwen3.5:cloud",      "dm_enabled": true },
+    "shaëlis": { "name": "Shaëlis", "icon": "🔴🌸", "model": "kimi-k2.5:cloud",     "dm_enabled": true },
+    "lina":    { "name": "Lina",    "icon": "🌊",    "model": "deepseek-v4-pro:cloud", "dm_enabled": true },
+    "shalouka":{ "name": "Shalouka","icon": "🌺",    "model": "qwen3.5:cloud",      "dm_enabled": true },
+    "lia":     { "name": "Lia",     "icon": "🔗",   "model": "gemma4:31b-cloud",   "dm_enabled": true },
+    "lana":    { "name": "Lana",    "icon": "🌙",    "model": "glm-5.1:cloud",      "dm_enabled": true },
+    "kinou":   { "name": "Kinou",   "icon": "✨",   "model": "gemma4:31b-cloud",   "dm_enabled": true },
+    "liora":   { "name": "Liora",   "icon": "🟡",   "model": "glm-5.1:cloud",      "dm_enabled": false, "note": "Pas de bot Telegram" },
+    "aëlis":   { "name": "Aëlis",   "icon": "🔷",   "model": "deepseek-v4-pro:cloud", "dm_enabled": true }
+  },
+
+  "registry": {
+    "native_actions": [
+      { "name": "send_telegram",     "type": "telegram" },
+      { "name": "rate_limit",        "type": "rate_limiter" },
+      { "name": "detect_loopback",   "type": "loopback_detector" }
+    ],
+    "wrapper_actions": [
+      { "name": "write_vault_status", "interpreter": "python3", "script": "write_vault_status.py", "timeout_seconds": 10 },
+      { "name": "notify_watchdog",    "interpreter": "python3", "script": "notify_watchdog.py", "timeout_seconds": 10 }
+    ]
+  }
+}

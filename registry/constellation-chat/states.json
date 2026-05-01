@@ -1,0 +1,7 @@
+[
+  { "id": "idle",     "description": "Waiting for incoming messages", "type": "stable" },
+  { "id": "received", "description": "Message captured, ready to distribute", "type": "transient", "auto_exit": true, "max_duration": "30s", "on_timeout": "idle" },
+  { "id": "cooldown", "description": "Agent rate-limited, waiting", "type": "paused", "auto_exit": true, "max_duration": "15m", "on_timeout": "idle" },
+  { "id": "frozen",   "description": "Agent frozen by anti-loop protocol", "type": "paused", "requires_manual_unlock": true },
+  { "id": "archived", "description": "Message archived", "type": "terminal" }
+]

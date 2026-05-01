@@ -1,0 +1,104 @@
+[
+  {
+    "hook_id": "pm-001",
+    "transition_id": "semer",
+    "timing": "before",
+    "priority": 1,
+    "action": "rate_limit",
+    "payload": { "max_per_minute": 5 },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-002",
+    "transition_id": "semer",
+    "timing": "after",
+    "priority": 1,
+    "action": "write_vault_status",
+    "payload": { "status": "germé" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-003",
+    "transition_id": "semer",
+    "timing": "after",
+    "priority": 2,
+    "action": "notify_watchdog",
+    "payload": { "event": "project-created", "new_state": "germé" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-004",
+    "transition_id": "ouvrir",
+    "timing": "after",
+    "priority": 1,
+    "action": "write_vault_status",
+    "payload": { "status": "ouvert" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-005",
+    "transition_id": "démarrer",
+    "timing": "after",
+    "priority": 1,
+    "action": "write_vault_status",
+    "payload": { "status": "en-cours" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-006",
+    "transition_id": "démarrer",
+    "timing": "after",
+    "priority": 2,
+    "action": "notify_watchdog",
+    "payload": { "event": "project-started", "new_state": "en-cours" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-007",
+    "transition_id": "terminer",
+    "timing": "before",
+    "priority": 1,
+    "action": "detect_loopback",
+    "payload": { "threshold": 3 },
+    "on_error": "continue",
+    "on_signal": {
+      "Abort": { "transition": "archiver", "alert_anarea": true, "message": "Boucle détectée — projet archivé automatiquement" }
+    }
+  },
+  {
+    "hook_id": "pm-008",
+    "transition_id": "terminer",
+    "timing": "after",
+    "priority": 1,
+    "action": "write_vault_status",
+    "payload": { "status": "terminé" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-009",
+    "transition_id": "terminer",
+    "timing": "after",
+    "priority": 2,
+    "action": "notify_watchdog",
+    "payload": { "event": "project-done", "new_state": "terminé" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-010",
+    "transition_id": "archiver",
+    "timing": "after",
+    "priority": 1,
+    "action": "write_vault_status",
+    "payload": { "status": "archivé" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-011",
+    "transition_id": "archiver",
+    "timing": "after",
+    "priority": 2,
+    "action": "notify_watchdog",
+    "payload": { "event": "project-archived", "new_state": "archivé" },
+    "on_error": "continue"
+  }
+]
