@@ -15,7 +15,7 @@ pub enum HookSignal {
 }
 
 /// Contexte passé à chaque action : l'objet courant + paramètres du hook
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ActionContext {
     pub object_id: String,
     pub workflow_id: String,
@@ -47,7 +47,7 @@ impl ActionHandler for ScriptWrapper {
     fn name(&self) -> &str { &self.name }
 
     fn handle(&self, ctx: &ActionContext) -> Result<HookSignal, String> {
-        let input = serde_json::to_string(&ctx.payload)
+        let input = serde_json::to_string(ctx)
             .unwrap_or_else(|_| "{}".to_string());
         let output = Command::new(&self.interpreter)
             .arg(&self.script_path)

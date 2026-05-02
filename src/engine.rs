@@ -40,12 +40,27 @@ impl WorkflowEngine {
         project_dir: PathBuf,
     ) -> Self {
         let dry_run = config.app_config.dry_run;
+        // Charger les objets persistés depuis le store
+        let mut objects = HashMap::new();
+        let mut frozen = HashMap::new();
+        match store.load_objects(&config.name) {
+            Ok(loaded) => {
+                for obj in &loaded {
+                    objects.insert(obj.object_id.clone(), obj.current_state.clone());
+                    frozen.insert(obj.object_id.clone(), obj.frozen);
+                    log::info!("[engine] Chargé '{}' → {}", obj.object_id, obj.current_state);
+                }
+            }
+            Err(e) => {
+                log::warn!("[engine] Impossible de charger les objets: {}", e);
+            }
+        }
         Self {
             config,
             registry,
             store,
-            objects: HashMap::new(),
-            frozen: HashMap::new(),
+            objects,
+            frozen,
             dry_run,
             project_dir,
         }
@@ -57,6 +72,7 @@ impl WorkflowEngine {
             return Err(format!("État initial '{}' inconnu", initial_state));
         }
         self.objects.insert(object_id.to_string(), initial_state.to_string());
+        let _ = self.store.upsert_object(&self.config.name, object_id, initial_state, false);
         log::info!("[engine] Objet '{}' créé → {}", object_id, initial_state);
         Ok(())
     }
@@ -74,6 +90,9 @@ impl WorkflowEngine {
     /// Dégele un objet manuellement (Anaréa uniquement)
     pub fn unfreeze(&mut self, object_id: &str) {
         self.frozen.insert(object_id.to_string(), false);
+        if let Some(state) = self.objects.get(object_id) {
+            let _ = self.store.upsert_object(&self.config.name, object_id, state, false);
+        }
         log::info!("[engine] '{}' dégelé manuellement", object_id);
     }
 
@@ -83,6 +102,17 @@ impl WorkflowEngine {
         &mut self,
         object_id: &str,
         transition_id: &str,
+    ) -> Result<TransitionResult, String> {
+        self.apply_transition_with_payload(object_id, transition_id, serde_json::Value::Object(Default::default()))
+    }
+
+    /// Exécute une transition avec un payload runtime (fusionné dans chaque hook).
+    /// Permet de passer des données dynamiques (ex: message d'itération, éléments retenus).
+    pub fn apply_transition_with_payload(
+        &mut self,
+        object_id: &str,
+        transition_id: &str,
+        runtime_payload: serde_json::Value,
     ) -> Result<TransitionResult, String> {
         let current = self.current_state(object_id)?;
 
@@ -97,7 +127,7 @@ impl WorkflowEngine {
             ));
         }
 
-        self.execute_transition(object_id, &transition)
+        self.execute_transition(object_id, &transition, &runtime_payload)
     }
 
     /// Trouve et exécute la première transition automatique disponible depuis l'état courant
@@ -114,7 +144,7 @@ impl WorkflowEngine {
         }
 
         let transition = candidates[0].clone();
-        let result = self.execute_transition(object_id, &transition)?;
+        let result = self.execute_transition(object_id, &transition, &serde_json::Value::Object(Default::default()))?;
         Ok(Some(result))
     }
 
@@ -151,6 +181,7 @@ impl WorkflowEngine {
         &mut self,
         object_id: &str,
         transition: &crate::config::TransitionDef,
+        runtime_payload: &serde_json::Value,
     ) -> Result<TransitionResult, String> {
         let from_state = self.objects[object_id].clone();
         let mut hooks_fired: Vec<String> = vec![];
@@ -159,7 +190,7 @@ impl WorkflowEngine {
 
         // ── Before hooks ──────────────────────────────────────────────────
         for hook in self.config.find_hooks(&transition.id, "before") {
-            let signal = self.fire_hook(hook, object_id, &from_state, &transition.to, &transition.id)?;
+            let signal = self.fire_hook(hook, object_id, &from_state, &transition.to, &transition.id, runtime_payload)?;
             hooks_fired.push(hook.hook_id.clone());
             match signal {
                 HookSignal::Continue => continue,
@@ -219,12 +250,20 @@ impl WorkflowEngine {
                 object_id,
                 &from_state,
                 &to_state,
+                &transition.id,
+            );
+            let is_frozen = self.frozen.get(object_id).copied().unwrap_or(false);
+            let _ = self.store.upsert_object(
+                &self.config.name,
+                object_id,
+                &to_state,
+                is_frozen,
             );
         }
 
         // ── After hooks ───────────────────────────────────────────────────
         for hook in self.config.find_hooks(&transition.id, "after") {
-            let signal = self.fire_hook(hook, object_id, &from_state, &to_state, &transition.id)?;
+            let signal = self.fire_hook(hook, object_id, &from_state, &to_state, &transition.id, runtime_payload)?;
             hooks_fired.push(hook.hook_id.clone());
             match signal {
                 HookSignal::Continue => continue,
@@ -261,10 +300,21 @@ impl WorkflowEngine {
         current_state: &str,
         target_state: &str,
         transition_id: &str,
+        runtime_payload: &serde_json::Value,
     ) -> Result<HookSignal, String> {
         if self.dry_run && hook.action == "send_telegram" {
             log::info!("[engine] DRY-RUN hook {} ({}) — skip Telegram", hook.hook_id, hook.action);
             return Ok(HookSignal::Continue);
+        }
+
+        // Fusionner le payload statique du hook avec le payload runtime
+        let mut merged = hook.payload.clone();
+        if let (serde_json::Value::Object(ref mut map), serde_json::Value::Object(runtime)) =
+            (&mut merged, runtime_payload)
+        {
+            for (k, v) in runtime {
+                map.insert(k.clone(), v.clone());
+            }
         }
 
         let ctx = ActionContext {
@@ -273,7 +323,7 @@ impl WorkflowEngine {
             current_state: current_state.to_string(),
             target_state: target_state.to_string(),
             transition_id: transition_id.to_string(),
-            payload: hook.payload.clone(),
+            payload: merged,
         };
 
         match self.registry.get(&hook.action) {

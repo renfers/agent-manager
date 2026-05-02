@@ -100,5 +100,86 @@
     "action": "notify_watchdog",
     "payload": { "event": "project-archived", "new_state": "archivé" },
     "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-012",
+    "transition_id": "itérer",
+    "timing": "before",
+    "priority": 1,
+    "action": "rate_limit",
+    "payload": { "max_per_minute": 3 },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-013",
+    "transition_id": "itérer",
+    "timing": "after",
+    "priority": 1,
+    "action": "create_iteration",
+    "payload": { "event": "iteration-created" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-014",
+    "transition_id": "itérer",
+    "timing": "after",
+    "priority": 2,
+    "action": "notify_watchdog",
+    "payload": { "event": "iteration-created", "new_state": "en-cours" },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-015",
+    "transition_id": "semer",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-016",
+    "transition_id": "ouvrir",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-017",
+    "transition_id": "démarrer",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-018",
+    "transition_id": "terminer",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-019",
+    "transition_id": "archiver",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
+  },
+  {
+    "hook_id": "pm-020",
+    "transition_id": "itérer",
+    "timing": "after",
+    "priority": 3,
+    "action": "update_dashboard_state",
+    "payload": {  },
+    "on_error": "continue"
   }
 ]

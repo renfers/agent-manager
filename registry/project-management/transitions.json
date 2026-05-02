@@ -55,5 +55,12 @@
     "trigger": "hook_decision",
     "permissions": ["system"],
     "condition": "auto"
+  },
+  {
+    "id": "itérer",
+    "from": "en-cours", "to": "en-cours",
+    "description": "Nouvelle itération dans l'état en-cours — génère un sous-dossier numéroté et relance l'appel aux sœurs avec des consignes affinées",
+    "trigger": "external",
+    "permissions": ["any"]
   }
 ]

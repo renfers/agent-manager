@@ -38,6 +38,10 @@ struct Cli {
     #[arg(short, long)]
     transition: Option<String>,
 
+    /// Payload JSON runtime (fusionné dans les hooks)
+    #[arg(short, long, default_value = "{}")]
+    payload: String,
+
     /// État initial pour un nouvel objet
     #[arg(long, default_value = "idéation")]
     initial_state: String,
@@ -133,7 +137,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("\n✅ Cycle complet : {} → {}", "idéation", engine.state_of(demo_id).unwrap_or("?"));
     } else if let Some(ref object_id) = cli.object {
         if let Some(ref transition_id) = cli.transition {
-            match engine.apply_transition(object_id, transition_id) {
+            let runtime_payload: serde_json::Value = serde_json::from_str(&cli.payload)
+                .unwrap_or_else(|_| serde_json::Value::Object(Default::default()));
+            match engine.apply_transition_with_payload(object_id, transition_id, runtime_payload) {
                 Ok(result) => {
                     println!("✅ {} : {} → {} via {}",
                         result.object_id, result.from_state, result.to_state, result.transition_id);
